@@ -37,6 +37,7 @@ public class SecurityConfiguration {
                         .requestMatchers("api/home/**").permitAll()
                         .requestMatchers("api/admin/**").hasRole("ADMIN")
                         .requestMatchers("api/cliente/**").hasRole("CLIENTE")
+                        .requestMatchers("api/principal").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -52,6 +53,7 @@ public class SecurityConfiguration {
                         )
                 )
                 .formLogin(from -> from
+                        .loginPage("/login")
                         .permitAll()
                         .successHandler(validacionExitosa())
                 )
@@ -62,7 +64,7 @@ public class SecurityConfiguration {
     public UserDetailsService userDetailsService() {
 
         UserDetails user = User.withUsername("user")
-                .password("{noop}12345") // El {noop} se usa para no encriptar la contraseña
+                .password("{noop}12345") // el {noop} se usa para no encriptar la contraseña
                 .roles("ADMIN", "CLIENTE")
                 .build();
 
