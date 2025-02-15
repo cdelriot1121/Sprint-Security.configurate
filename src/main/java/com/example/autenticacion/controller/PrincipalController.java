@@ -25,7 +25,6 @@ public class PrincipalController {
     public String principal() {
         return "principal";
     }
-
     @GetMapping("/home")
     public String home() {
         return "home";

@@ -34,6 +34,7 @@ public class SecurityConfiguration {
         return httpSecurity
                 .csrf(csrf -> csrf.disable()) // Cross-Site Request Forgery
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll() // el problema era el login.css
                         .requestMatchers("api/home/**").permitAll()
                         .requestMatchers("api/admin/**").hasRole("ADMIN")
                         .requestMatchers("api/cliente/**").hasRole("CLIENTE")
@@ -88,7 +89,16 @@ public class SecurityConfiguration {
 
     public AuthenticationSuccessHandler validacionExitosa() {
         return ((request, response, authentication) -> {
-            response.sendRedirect("/api/principal");
+            String role = authentication.getAuthorities().toString();
+            
+            if (role.contains("ADMIN")) {
+                response.sendRedirect("/api/admin/home");
+            } else if (role.contains("CLIENTE")) {
+                response.sendRedirect("/api/cliente/home");
+            } else {
+                response.sendRedirect("/api/principal");
+            }
         });
     }
+    
 }
