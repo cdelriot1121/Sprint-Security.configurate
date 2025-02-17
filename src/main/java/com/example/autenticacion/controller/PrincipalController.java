@@ -1,19 +1,20 @@
 package com.example.autenticacion.controller;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-@RestController
+@Controller
 @RequestMapping("/api")
 public class PrincipalController {
 
@@ -22,25 +23,26 @@ public class PrincipalController {
 
     @GetMapping("/principal")
     public String principal() {
-        return "Hello World!";
+        return "principal";
     }
-
     @GetMapping("/home")
     public String home() {
-        return "Pagina Libre";
+        return "home";
     }
 
     @GetMapping("/admin/home")
     public String admin() {
-        return "Pagina Admin";
+        return "admin";
     }
 
     @GetMapping("/cliente/home")
     public String cliente() {
-        return "Pagina Cliente";
+        return "cliente";
     }
 
-    @GetMapping("/session")
+  
+
+    @GetMapping("/session") //METODO PARA VER LAS SESIONES
     public ResponseEntity<?> getDetallesSession() {
 
         String sessionId = "";

@@ -34,9 +34,11 @@ public class SecurityConfiguration {
         return httpSecurity
                 .csrf(csrf -> csrf.disable()) // Cross-Site Request Forgery
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll() // el problema era el login.css
                         .requestMatchers("api/home/**").permitAll()
                         .requestMatchers("api/admin/**").hasRole("ADMIN")
                         .requestMatchers("api/cliente/**").hasRole("CLIENTE")
+                        .requestMatchers("api/principal").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -52,6 +54,7 @@ public class SecurityConfiguration {
                         )
                 )
                 .formLogin(from -> from
+                        .loginPage("/login")
                         .permitAll()
                         .successHandler(validacionExitosa())
                 )
@@ -62,7 +65,7 @@ public class SecurityConfiguration {
     public UserDetailsService userDetailsService() {
 
         UserDetails user = User.withUsername("user")
-                .password("{noop}12345") // El {noop} se usa para no encriptar la contraseña
+                .password("{noop}12345") // el {noop} se usa para no encriptar la contraseña
                 .roles("ADMIN", "CLIENTE")
                 .build();
 
@@ -86,7 +89,16 @@ public class SecurityConfiguration {
 
     public AuthenticationSuccessHandler validacionExitosa() {
         return ((request, response, authentication) -> {
-            response.sendRedirect("/api/principal");
+            String role = authentication.getAuthorities().toString();
+            
+            if (role.contains("ADMIN")) {
+                response.sendRedirect("/api/admin/home");
+            } else if (role.contains("CLIENTE")) {
+                response.sendRedirect("/api/cliente/home");
+            } else {
+                response.sendRedirect("/api/principal");
+            }
         });
     }
+    
 }
