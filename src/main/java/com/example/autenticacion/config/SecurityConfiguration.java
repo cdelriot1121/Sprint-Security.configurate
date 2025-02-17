@@ -31,35 +31,36 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
-                .csrf(csrf -> csrf.disable()) // Cross-Site Request Forgery
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll() // el problema era el login.css
-                        .requestMatchers("api/home/**").permitAll()
-                        .requestMatchers("api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("api/cliente/**").hasRole("CLIENTE")
-                        .requestMatchers("api/principal").authenticated()
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS) // ALWAYS - IF_REQUIRED - NEVER - STATELESS
-                        .invalidSessionUrl("/login")
-                        .sessionFixation(fixation -> fixation
-                                .migrateSession()
-                        )
-                        .sessionConcurrency(concurrency -> concurrency
-                                .maximumSessions(1)
-                                .expiredUrl("/login")
-                                .sessionRegistry(datosSession())
-                        )
-                )
-                .formLogin(from -> from
-                        .loginPage("/login")
-                        .permitAll()
-                        .successHandler(validacionExitosa())
-                )
-                .build();
+    return httpSecurity
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                            .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll() // Login page, static resources
+                            .requestMatchers("/api/home/**").permitAll()
+                            .requestMatchers("/api/admin/home").hasRole("ADMIN")
+                            .requestMatchers("/api/cliente/home").hasRole("CLIENTE")
+                            .requestMatchers("/api/principal").authenticated()
+                            .anyRequest().authenticated()
+            )
+            .exceptionHandling(handling -> handling
+                    .accessDeniedPage("/error/403")) //para redirigir el error 403 al Mapping del error
+            .sessionManagement(session -> session
+                            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                            .invalidSessionUrl("/login")
+                            .sessionFixation(fixation -> fixation.migrateSession())
+                            .sessionConcurrency(concurrency -> concurrency
+                                            .maximumSessions(1)
+                                            .expiredUrl("/login")
+                                            .sessionRegistry(datosSession())
+                            )
+            )
+            .formLogin(from -> from
+                            .loginPage("/login")
+                            .permitAll()
+                            .successHandler(validacionExitosa())
+            )
+            .build();
     }
+
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -88,17 +89,18 @@ public class SecurityConfiguration {
     }
 
     public AuthenticationSuccessHandler validacionExitosa() {
-        return ((request, response, authentication) -> {
+        return (request, response, authentication) -> {
             String role = authentication.getAuthorities().toString();
             
             if (role.contains("ADMIN")) {
-                response.sendRedirect("/api/admin/home");
+                response.sendRedirect("/api/admin/home"); 
             } else if (role.contains("CLIENTE")) {
-                response.sendRedirect("/api/cliente/home");
+                response.sendRedirect("/api/cliente/home"); 
             } else {
-                response.sendRedirect("/api/principal");
+                response.sendRedirect("/api/principal"); 
             }
-        });
+        };
     }
+    
     
 }

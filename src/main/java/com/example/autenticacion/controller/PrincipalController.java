@@ -1,14 +1,7 @@
 package com.example.autenticacion.controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +18,7 @@ public class PrincipalController {
     public String principal() {
         return "principal";
     }
+
     @GetMapping("/home")
     public String home() {
         return "home";
@@ -39,10 +33,10 @@ public class PrincipalController {
     public String cliente() {
         return "cliente";
     }
+}
 
-  
 
-    @GetMapping("/session") //METODO PARA VER LAS SESIONES
+    /* @GetMapping("/session") //METODO PARA VER LAS SESIONES
     public ResponseEntity<?> getDetallesSession() {
 
         String sessionId = "";
@@ -67,5 +61,5 @@ public class PrincipalController {
         response.put("sessionUser", userObjtect);
 
         return ResponseEntity.ok(response);
-    }
-}
+    } */
+
