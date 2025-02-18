@@ -34,7 +34,7 @@ public class SecurityConfiguration {
     return httpSecurity
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll() // Login page, static resources
+                            .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll() 
                             .requestMatchers("/api/home/**").permitAll()
                             .requestMatchers("/api/admin/home").hasRole("ADMIN")
                             .requestMatchers("/api/cliente/home").hasRole("CLIENTE")
@@ -42,7 +42,7 @@ public class SecurityConfiguration {
                             .anyRequest().authenticated()
             )
             .exceptionHandling(handling -> handling
-                    .accessDeniedPage("/error/403")) //para redirigir el error 403 al Mapping del error
+                    .accessDeniedPage("/error/403")) 
             .sessionManagement(session -> session
                             .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                             .invalidSessionUrl("/login")
