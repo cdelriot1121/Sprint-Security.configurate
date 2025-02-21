@@ -3,20 +3,20 @@ package com.example.autenticacion.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+
+import com.example.autenticacion.repository.ClienteRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -66,26 +66,35 @@ public class SecurityConfiguration {
     }
 
 
+
     @Bean
-    public UserDetailsService userDetailsService() {
-
-        UserDetails user = User.withUsername("user")
-                .password("{noop}12345") // el {noop} se usa para no encriptar la contraseña
-                .roles("ADMIN", "CLIENTE")
-                .build();
-
-        UserDetails admin = User.withUsername("admin")
-                .password("{noop}admin")
-                .roles("ADMIN")
-                .build();
-
-        UserDetails cliente = User.withUsername("cliente")
-                .password("{noop}cliente")
-                .roles("CLIENTE")
-                .build();
-
-        return new InMemoryUserDetailsManager(user, admin, cliente);
+    public UserDetailsService userDetailsService(ClienteRepository clienteRepository) {
+        return new CustomerUserDetailService(clienteRepository);
     }
+
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider(UserDetailsService
+    userDetailsService, PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
+        return authProvider;
+    }
+
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) throws Exception{
+        return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class)
+        .authenticationProvider(authenticationProvider(userDetailsService, passwordEncoder))
+        .build();
+    }
+
 
     @Bean
     public SessionRegistry datosSession() {

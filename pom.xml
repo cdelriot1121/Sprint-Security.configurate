@@ -5,14 +5,14 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.2</version>
+		<version>3.4.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
 	<artifactId>autenticacion</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>autenticacion</name>
-	<description>Ejemplo de Autenticación sin Autorización en Spring Security</description>
+	<description>Ejemplo en Spring Security para Proximas Actividades </description>
 	<url/>
 	<licenses>
 		<license/>
