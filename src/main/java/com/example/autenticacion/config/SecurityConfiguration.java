@@ -1,5 +1,6 @@
 package com.example.autenticacion.config;
 
+import com.example.autenticacion.repository.ClienteRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,16 +11,16 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
-import com.example.autenticacion.repository.ClienteRepository;
-
 @Configuration
-@EnableWebSecurity
 public class SecurityConfiguration {
 
     /*
@@ -35,36 +36,35 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-    return httpSecurity
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll() 
-                            .requestMatchers("/api/home/**").permitAll()
-                            .requestMatchers("/api/admin/home").hasRole("ADMIN")
-                            .requestMatchers("/api/cliente/home").hasRole("CLIENTE")
-                            .requestMatchers("/api/principal").authenticated()
-                            .anyRequest().authenticated()
-            )
-            .exceptionHandling(handling -> handling
-                    .accessDeniedPage("/error/403")) 
-            .sessionManagement(session -> session
-                            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                            .invalidSessionUrl("/login")
-                            .sessionFixation(fixation -> fixation.migrateSession())
-                            .sessionConcurrency(concurrency -> concurrency
-                                            .maximumSessions(1)
-                                            .expiredUrl("/login")
-                                            .sessionRegistry(datosSession())
-                            )
-            )
-            .formLogin(from -> from
-                            .loginPage("/login")
-                            .permitAll()
-                            .successHandler(validacionExitosa())
-            )
-            .build();
+        return httpSecurity
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/api/home/**").permitAll()
+                        .requestMatchers("/api/admin/home").hasRole("ADMIN")
+                        .requestMatchers("/api/cliente/home").hasRole("CLIENTE")
+                        .requestMatchers("/api/principal").authenticated()
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(handling -> handling
+                        .accessDeniedPage("/error/403"))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .invalidSessionUrl("/login")
+                        .sessionFixation(fixation -> fixation.migrateSession())
+                        .sessionConcurrency(concurrency -> concurrency
+                                .maximumSessions(1)
+                                .expiredUrl("/login")
+                                .sessionRegistry(datosSession())
+                        )
+                )
+                .formLogin(from -> from
+                        .loginPage("/login")
+                        .permitAll()
+                        .successHandler(validacionExitosa())
+                )
+                .build();
     }
-
 
 
     @Bean
@@ -72,29 +72,29 @@ public class SecurityConfiguration {
         return new CustomerUserDetailService(clienteRepository);
     }
 
-
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // DaoAuthenticationProvider es el encargado de autenticar usuarios.
+    // Usa el UserDetailsService para cargar los usuarios desde la base de datos.
+    // Compara la contraseña ingresada con la encriptada usando BCrypt.
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(UserDetailsService
-    userDetailsService, PasswordEncoder passwordEncoder) {
+    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
 
-
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) throws Exception{
+    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) throws Exception {
         return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class)
-        .authenticationProvider(authenticationProvider(userDetailsService, passwordEncoder))
-        .build();
+                .authenticationProvider(
+                        authenticationProvider(userDetailsService, passwordEncoder)
+                ).build();
     }
-
 
     @Bean
     public SessionRegistry datosSession() {
@@ -104,16 +104,15 @@ public class SecurityConfiguration {
     public AuthenticationSuccessHandler validacionExitosa() {
         return (request, response, authentication) -> {
             String role = authentication.getAuthorities().toString();
-            
+
             if (role.contains("ADMIN")) {
-                response.sendRedirect("/api/admin/home"); 
+                response.sendRedirect("/api/admin/home");
             } else if (role.contains("CLIENTE")) {
-                response.sendRedirect("/api/cliente/home"); 
+                response.sendRedirect("/api/cliente/home");
             } else {
-                response.sendRedirect("/api/principal"); 
+                response.sendRedirect("/api/principal");
             }
         };
     }
-    
-    
+
 }
